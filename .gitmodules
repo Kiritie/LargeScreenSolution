@@ -1,0 +1,6 @@
+[submodule "Plugins/LargeScreen"]
+	path = Plugins/LargeScreen
+	url = git@github.com:Kiritie/LargeScreen.git
+[submodule "Plugins/ZMQControl"]
+	path = Plugins/ZMQControl
+	url = git@github.com:Kiritie/ZMQControl.git
