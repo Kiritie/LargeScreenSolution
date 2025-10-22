@@ -21,7 +21,8 @@ public class LargeScreenSolution : ModuleRules
 			new string[]
 			{
 				"LargeScreen",
-				"ZMQControl"
+				"ZMQControl",
+				"Json"
 			});
 	}
 }
