@@ -37,34 +37,34 @@ void UMessageHandle_SpawnEntity::OnReceiveMessage(const FString& InData)
 		}
 		if(JsonObject->HasField(TEXT("location")))
 		{
-			const FString Field = JsonObject->GetStringField(TEXT("location"));
-			TArray<FString> Fields;
-			if(Field.ParseIntoArray(Fields, TEXT(",")) >= 3)
-			{
-				Location = FVector(FCString::Atof(*Fields[0]), FCString::Atof(*Fields[1]), FCString::Atof(*Fields[2]));
-			}
+			const TSharedPtr<FJsonObject> Location_Obj = JsonObject->GetObjectField(TEXT("location"));
+			Location.X = Location_Obj->GetNumberField(TEXT("x"));
+			Location.Y = Location_Obj->GetNumberField(TEXT("y"));
+			Location.Z = Location_Obj->GetNumberField(TEXT("z"));
 		}
 		if(JsonObject->HasField(TEXT("rotation")))
 		{
-			const FString Field = JsonObject->GetStringField(TEXT("rotation"));
-			TArray<FString> Fields;
-			if(Field.ParseIntoArray(Fields, TEXT(",")) >= 3)
-			{
-				Rotation = FRotator(FCString::Atof(*Fields[0]), FCString::Atof(*Fields[1]), FCString::Atof(*Fields[2]));
-			}
+			const TSharedPtr<FJsonObject> Rotation_Obj = JsonObject->GetObjectField(TEXT("rotation"));
+			Rotation.Roll = Rotation_Obj->GetNumberField(TEXT("roll"));
+			Rotation.Pitch = Rotation_Obj->GetNumberField(TEXT("pitch"));
+			Rotation.Yaw = Rotation_Obj->GetNumberField(TEXT("yaw"));
 		}
 		if(JsonObject->HasField(TEXT("scale")))
 		{
-			const FString Field = JsonObject->GetStringField(TEXT("scale"));
-			TArray<FString> Fields;
-			if(Field.ParseIntoArray(Fields, TEXT(",")) >= 3)
-			{
-				Scale = FVector(FCString::Atof(*Fields[0]), FCString::Atof(*Fields[1]), FCString::Atof(*Fields[2]));
-			}
+			const TSharedPtr<FJsonObject> Scale_Obj = JsonObject->GetObjectField(TEXT("scale"));
+			Scale.X = Scale_Obj->GetNumberField(TEXT("x"));
+			Scale.Y = Scale_Obj->GetNumberField(TEXT("y"));
+			Scale.Z = Scale_Obj->GetNumberField(TEXT("z"));
 		}
 		
 		if (Class)
 		{
+			ASceneManager* SceneManager = ASceneManager::Get();
+			if (SceneManager && SceneManager->HasSceneObject(ID))
+			{
+				return;
+			}
+			
 			FActorSpawnParameters SpawnInfo;
 			SpawnInfo.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 
