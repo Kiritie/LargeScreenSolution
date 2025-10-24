@@ -37,6 +37,7 @@ void UMessageHandle_SpawnEntity::OnReceiveMessage(const FString& InData)
 
 		if(ASceneManager::Get()->HasSceneObject(ID))
 		{
+			UZMQMessageManager::SendStatusToServer(202,FString::Printf(TEXT("Spawn Entity is Exist: id: %s"),*ID),TEXT("SpawnEntity"));
 			return;
 		}
 
@@ -69,12 +70,6 @@ void UMessageHandle_SpawnEntity::OnReceiveMessage(const FString& InData)
 		
 		if (Class)
 		{
-			ASceneManager* SceneManager = ASceneManager::Get();
-			if (SceneManager && SceneManager->HasSceneObject(ID))
-			{
-				return;
-			}
-			
 			FActorSpawnParameters SpawnInfo;
 			SpawnInfo.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 
@@ -87,33 +82,11 @@ void UMessageHandle_SpawnEntity::OnReceiveMessage(const FString& InData)
 
 				ASceneManager::Get()->AddSceneObject(ID, Entity);
 
-				//返回数据
-				FZMQStatusCode Status;
-				Status.StatusCode = 200;
-				Status.Message = FString::Printf(TEXT("Spawn entity success: %s"), *ID);
-
-				// 使用 PublishChannel 主动返回消息
-				if (AZMQCoreManager::Get())
-				{
-					if (UZMQMessageManager* MsgManager = AZMQCoreManager::Get()->GetMessageManagerByName(TEXT("Publish")))
-					{
-						MsgManager->SendStatusToServer(Status, TEXT("SpawnEntity"));
-					}
-				}
+				UZMQMessageManager::SendStatusToServer(201, FString::Printf(TEXT("Spawn Created Entity Success: id: %s"),*ID),TEXT("SpawnEntity"));
 			}
 			else
 			{
-				FZMQStatusCode Status;
-				Status.StatusCode = 500;
-				Status.Message = FString::Printf(TEXT("Failed to spawn entity: %s"), *ID);
-
-				if (AZMQCoreManager::Get())
-				{
-					if (UZMQMessageManager* MsgManager = AZMQCoreManager::Get()->GetMessageManagerByName(TEXT("Publish")))
-					{
-						MsgManager->SendStatusToServer(Status, TEXT("SpawnEntity"));
-					}
-				}
+				UZMQMessageManager::SendStatusToServer(500,FString::Printf(TEXT("Spawn Entity Failed: id: %s"),*ID),TEXT("SpawnEntity"));
 			}
 		}
 	}
