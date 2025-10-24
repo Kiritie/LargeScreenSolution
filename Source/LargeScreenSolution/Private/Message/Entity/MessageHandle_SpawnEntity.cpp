@@ -6,6 +6,10 @@
 #include "Scene/SceneManager.h"
 #include "Scene/Entity/EntityBase.h"
 
+#include "Message/ZMQMessageManager.h"
+#include "Core/ZMQCoreManager.h"
+#include "ZMQControlTypes.h"
+
 UMessageHandle_SpawnEntity::UMessageHandle_SpawnEntity()
 {
 	MessageTag = GameplayTags::Message_SpawnEntity;
@@ -76,6 +80,34 @@ void UMessageHandle_SpawnEntity::OnReceiveMessage(const FString& InData)
 				Entity->SetActorScale3D(Scale);
 
 				ASceneManager::Get()->AddSceneObject(ID, Entity);
+
+				//返回数据
+				FZMQStatusCode Status;
+				Status.StatusCode = 200;
+				Status.Message = FString::Printf(TEXT("Spawn entity success: %s"), *ID);
+
+				// 使用 PublishChannel 主动返回消息
+				if (AZMQCoreManager::Get())
+				{
+					if (UZMQMessageManager* MsgManager = AZMQCoreManager::Get()->GetMessageManagerByName(TEXT("Publish")))
+					{
+						MsgManager->SendStatusToServer(Status, TEXT("SpawnEntity"));
+					}
+				}
+			}
+			else
+			{
+				FZMQStatusCode Status;
+				Status.StatusCode = 500;
+				Status.Message = FString::Printf(TEXT("Failed to spawn entity: %s"), *ID);
+
+				if (AZMQCoreManager::Get())
+				{
+					if (UZMQMessageManager* MsgManager = AZMQCoreManager::Get()->GetMessageManagerByName(TEXT("Publish")))
+					{
+						MsgManager->SendStatusToServer(Status, TEXT("SpawnEntity"));
+					}
+				}
 			}
 		}
 	}
