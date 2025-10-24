@@ -34,6 +34,12 @@ void UMessageHandle_SpawnEntity::OnReceiveMessage(const FString& InData)
 		{
 			ID = JsonObject->GetStringField(TEXT("id"));
 		}
+
+		if(ASceneManager::Get()->HasSceneObject(ID))
+		{
+			return;
+		}
+
 		if(JsonObject->HasField(TEXT("class")))
 		{
 			const FString Field = JsonObject->GetStringField(TEXT("class"));
