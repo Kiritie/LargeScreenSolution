@@ -29,6 +29,7 @@ void UMessageHandle_SpawnEntity::OnReceiveMessage(const FString& InData)
 		FVector Location = FVector::ZeroVector;
 		FRotator Rotation = FRotator::ZeroRotator;
 		FVector Scale = FVector::ZeroVector;
+		FString Data = TEXT("");
 		
 		if(JsonObject->HasField(TEXT("id")))
 		{
@@ -67,6 +68,18 @@ void UMessageHandle_SpawnEntity::OnReceiveMessage(const FString& InData)
 			Scale.Y = Scale_Obj->GetNumberField(TEXT("y"));
 			Scale.Z = Scale_Obj->GetNumberField(TEXT("z"));
 		}
+		if(JsonObject->HasField(TEXT("data")))
+		{
+			const TSharedPtr<FJsonObject> Scale_Obj = JsonObject->GetObjectField(TEXT("data"));
+			if (Scale_Obj.IsValid())
+			{
+				// 创建一个 JSON Writer
+				TSharedRef<TJsonWriter<>> Writer = TJsonWriterFactory<>::Create(&Data);
+				// 序列化 FJsonObject
+				FJsonSerializer::Serialize(Scale_Obj.ToSharedRef(), Writer);
+			}
+
+		}
 		
 		if (Class)
 		{
@@ -74,11 +87,13 @@ void UMessageHandle_SpawnEntity::OnReceiveMessage(const FString& InData)
 			SpawnInfo.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 
 			AEntityBase* Entity = GetWorld()->SpawnActor<AEntityBase>(Class, SpawnInfo);
+			
 			if(Entity)
 			{
 				Entity->SetActorLocation(Location);
 				Entity->SetActorRotation(Rotation);
 				Entity->SetActorScale3D(Scale);
+				Entity->LoadData(Data);
 
 				ASceneManager::Get()->AddSceneObject(ID, Entity);
 

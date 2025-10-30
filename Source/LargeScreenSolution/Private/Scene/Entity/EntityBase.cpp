@@ -25,6 +25,10 @@ void AEntityBase::OnTermination()
 	K2_OnTermination();
 }
 
+void AEntityBase::LoadData_Implementation(const FString& Data)
+{
+}
+
 void AEntityBase::BeginPlay()
 {
 	Super::BeginPlay();

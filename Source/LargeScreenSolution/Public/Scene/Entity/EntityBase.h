@@ -38,6 +38,11 @@ public:
 	void K2_OnTermination();
 	UFUNCTION()
 	virtual void OnTermination();
+	/**
+	 *解析参数
+	*/
+	UFUNCTION(BlueprintNativeEvent)
+	void LoadData(const FString& Data);
 
 protected:
 	virtual void BeginPlay() override;
