@@ -4,3 +4,6 @@
 [submodule "Plugins/ZMQControl"]
 	path = Plugins/ZMQControl
 	url = git@github.com:Kiritie/ZMQControl.git
+[submodule "Plugins/MeshLoader"]
+	path = Plugins/MeshLoader
+	url = git@github.com:Kiritie/MeshLoader.git
