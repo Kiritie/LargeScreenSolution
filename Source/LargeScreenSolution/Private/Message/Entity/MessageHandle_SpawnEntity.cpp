@@ -78,7 +78,6 @@ void UMessageHandle_SpawnEntity::OnReceiveMessage(const FString& InData)
 				// 序列化 FJsonObject
 				FJsonSerializer::Serialize(Scale_Obj.ToSharedRef(), Writer);
 			}
-
 		}
 		
 		if (Class)

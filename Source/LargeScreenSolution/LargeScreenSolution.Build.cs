@@ -22,7 +22,8 @@ public class LargeScreenSolution : ModuleRules
 			{
 				"LargeScreen",
 				"ZMQControl",
-				"Json"
+				"Json",
+				"MeshLoader"
 			});
 	}
 }
