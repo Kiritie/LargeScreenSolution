@@ -105,7 +105,7 @@ void UMessageHandle_SpawnDynamicEntity::OnReceiveMessage(const FString& InData)
 						if (!Obj.IsValid())
 							continue;
 						FModelData Model;
-						Model.ModelPath = FPaths::Combine(ModelPath, Obj->GetStringField(TEXT("model"))) ;
+						Model.ModelPath = FPaths::Combine(ModelPath, Obj->GetStringField(TEXT("model")));
 						Model.ModelName = Obj->GetStringField(TEXT("name"));
 						Model.ModelScale = Obj->GetNumberField(TEXT("scale"));
 
@@ -120,9 +120,19 @@ void UMessageHandle_SpawnDynamicEntity::OnReceiveMessage(const FString& InData)
 									continue;
 
 								FMaterialData MaterialData;
-								MaterialData.BaseColor = MatObj->GetStringField(TEXT("base_color"));
-								MaterialData.MainTexture = FPaths::Combine(ModelPath, MatObj->GetStringField(TEXT("main_texture")));
-								MaterialData.NormalTexture = FPaths::Combine(ModelPath, MatObj->GetStringField(TEXT("normal_texture")));
+								MaterialData.BaseColor = FColor::FromHex(MatObj->GetStringField(TEXT("base_color")));
+
+								FString MainTexture =  MatObj->GetStringField(TEXT("main_texture"));
+								if (!MainTexture.IsEmpty())
+								{
+									MaterialData.MainTexture = FPaths::Combine(ModelPath, MatObj->GetStringField(TEXT("main_texture")));
+								}
+
+								FString NormalTexture =  MatObj->GetStringField(TEXT("normal_texture"));
+								if (!NormalTexture.IsEmpty())
+								{
+									MaterialData.NormalTexture = FPaths::Combine(ModelPath, MatObj->GetStringField(TEXT("normal_texture")));
+								}
 								Model.MaterialDatas.Add(MaterialData);
 							}
 							ModelData.Add(Model);
