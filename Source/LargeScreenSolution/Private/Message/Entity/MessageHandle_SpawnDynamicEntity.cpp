@@ -27,7 +27,6 @@ void UMessageHandle_SpawnDynamicEntity::OnReceiveMessage(const FString& InData)
 	if (FJsonSerializer::Deserialize(Reader, JsonObject))
 	{
 		FString ID = TEXT("");
-		UClass* Class = nullptr;
 		FVector Location = FVector::ZeroVector;
 		FRotator Rotation = FRotator::ZeroRotator;
 		FVector Scale = FVector::ZeroVector;
@@ -47,9 +46,6 @@ void UMessageHandle_SpawnDynamicEntity::OnReceiveMessage(const FString& InData)
 			return;
 		}
 
-		FString Field = TEXT("/Script/Engine.Blueprint'/Game/Blueprints/Entity/BP_Enity_Dynamic.BP_Enity_Dynamic_C'");
-		Class = LoadClass<AActor>(nullptr, *Field);
-		
 		if(JsonObject->HasField(TEXT("location")))
 		{
 			const TSharedPtr<FJsonObject> Location_Obj = JsonObject->GetObjectField(TEXT("location"));
@@ -142,29 +138,26 @@ void UMessageHandle_SpawnDynamicEntity::OnReceiveMessage(const FString& InData)
 			}
 		}
 		
-		if (Class)
+		FActorSpawnParameters SpawnInfo;
+		SpawnInfo.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+
+		ADynamicEntityBase* Entity = GetWorld()->SpawnActor<ADynamicEntityBase>(ADynamicEntityBase::StaticClass(), SpawnInfo);
+		
+		if(Entity)
 		{
-			FActorSpawnParameters SpawnInfo;
-			SpawnInfo.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+			Entity->SetActorLocation(Location);
+			Entity->SetActorRotation(Rotation);
+			Entity->SetActorScale3D(Scale);
+			Entity->LoadData(Data);
+			Entity->LoadMeshAndTextureData(ModelData);
 
-			ADynamicEntityBase* Entity = GetWorld()->SpawnActor<ADynamicEntityBase>(Class, SpawnInfo);
-			
-			if(Entity)
-			{
-				Entity->SetActorLocation(Location);
-				Entity->SetActorRotation(Rotation);
-				Entity->SetActorScale3D(Scale);
-				Entity->LoadData(Data);
-				Entity->LoadMeshAndTextureData(ModelData);
+			ASceneManager::Get()->AddSceneObject(ID, Entity);
 
-				ASceneManager::Get()->AddSceneObject(ID, Entity);
-
-				UZMQMessageManager::SendStatusToServer(201, FString::Printf(TEXT("Spawn Created Entity Success: id: %s"),*ID),TEXT("SpawnDynamicEntity"));
-			}
-			else
-			{
-				UZMQMessageManager::SendStatusToServer(500,FString::Printf(TEXT("Spawn Entity Failed: id: %s"),*ID),TEXT("SpawnDynamicEntity"));
-			}
+			UZMQMessageManager::SendStatusToServer(201, FString::Printf(TEXT("Spawn Created Entity Success: id: %s"),*ID),TEXT("SpawnDynamicEntity"));
+		}
+		else
+		{
+			UZMQMessageManager::SendStatusToServer(500,FString::Printf(TEXT("Spawn Entity Failed: id: %s"),*ID),TEXT("SpawnDynamicEntity"));
 		}
 	}
 }
