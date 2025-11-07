@@ -84,58 +84,14 @@ void UMessageHandle_SpawnDynamicEntity::OnReceiveMessage(const FString& InData)
 		{
 			ModelPath = JsonObject->GetStringField(TEXT("model_path"));
 		}
-		// 拼接完整路径
-		ConfigPath = FPaths::Combine(ModelPath,TEXT("config.json"));
-		if (FPaths::FileExists(ConfigPath))
+		
+		if (UMeshLoaderStatics::LoadModelData(ModelPath, ModelData))
 		{
-			FString ConfigStr;
-			if (FFileHelper::LoadFileToString(ConfigStr, *ConfigPath))
-			{
-				TSharedRef<TJsonReader<>> Reader2 = TJsonReaderFactory<>::Create(ConfigStr);
-				TArray<TSharedPtr<FJsonValue>> JsonArray;
-				if (FJsonSerializer::Deserialize(Reader2, JsonArray))
-				{
-					for (const TSharedPtr<FJsonValue>& JsonValue : JsonArray)
-					{
-						const TSharedPtr<FJsonObject> Obj = JsonValue->AsObject();
-						if (!Obj.IsValid())
-							continue;
-						FModelData Model;
-						Model.ModelPath = FPaths::Combine(ModelPath, Obj->GetStringField(TEXT("model")));
-						Model.ModelName = Obj->GetStringField(TEXT("name"));
-						Model.ModelScale = Obj->GetNumberField(TEXT("scale"));
-
-						if (Obj->HasField(TEXT("materials")))
-						{
-							const TArray<TSharedPtr<FJsonValue>>& MaterialsArray = Obj->GetArrayField(TEXT("materials"));
-							for (const TSharedPtr<FJsonValue>& MatValue : MaterialsArray)
-							{
-								const TSharedPtr<FJsonObject> MatObj = MatValue->AsObject();
-
-								if (!MatObj.IsValid())
-									continue;
-
-								FMaterialData MaterialData;
-								MaterialData.BaseColor = FColor::FromHex(MatObj->GetStringField(TEXT("base_color")));
-
-								FString MainTexture =  MatObj->GetStringField(TEXT("main_texture"));
-								if (!MainTexture.IsEmpty())
-								{
-									MaterialData.MainTexture = FPaths::Combine(ModelPath, MatObj->GetStringField(TEXT("main_texture")));
-								}
-
-								FString NormalTexture =  MatObj->GetStringField(TEXT("normal_texture"));
-								if (!NormalTexture.IsEmpty())
-								{
-									MaterialData.NormalTexture = FPaths::Combine(ModelPath, MatObj->GetStringField(TEXT("normal_texture")));
-								}
-								Model.MaterialDatas.Add(MaterialData);
-							}
-							ModelData.Add(Model);
-						}
-					}
-				}
-			}
+			UZMQMessageManager::SendStatusToServer(201, TEXT("Config Resolve is Success"),TEXT("SpawnDynamicEntity"));
+		}
+		else
+		{
+			UZMQMessageManager::SendStatusToServer(500, TEXT("Config Resolve is Failed"),TEXT("SpawnDynamicEntity"));
 		}
 		
 		FActorSpawnParameters SpawnInfo;
@@ -157,7 +113,7 @@ void UMessageHandle_SpawnDynamicEntity::OnReceiveMessage(const FString& InData)
 		}
 		else
 		{
-			UZMQMessageManager::SendStatusToServer(500,FString::Printf(TEXT("Spawn Entity Failed: id: %s"),*ID),TEXT("SpawnDynamicEntity"));
+			UZMQMessageManager::SendStatusToServer(500,FString::Printf(TEXT("Spawn Dynamic Entity Failed: id: %s"),*ID),TEXT("SpawnDynamicEntity"));
 		}
 	}
 }

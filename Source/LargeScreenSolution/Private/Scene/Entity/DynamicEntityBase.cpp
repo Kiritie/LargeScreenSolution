@@ -28,12 +28,14 @@ void ADynamicEntityBase::OnTermination()
 
 void ADynamicEntityBase::LoadMeshAndTextureData(const TArray<FModelData>& ModelData)
 {
+	UClass* Class = LoadClass<AMeshLoaderActor>(nullptr, TEXT("/Script/Engine.Blueprint'/MeshLoader/Example/Blueprints/BP_MeshLoaderActor.BP_MeshLoaderActor_C'"));
+	
 	for (const FModelData& Data : ModelData)
 	{
 		FActorSpawnParameters SpawnParameters;
 		SpawnParameters.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 
-		AMeshLoaderActor* Loader = GetWorld()->SpawnActor<AMeshLoaderActor>(AMeshLoaderActor::StaticClass(), GetActorTransform(), SpawnParameters);
+		AMeshLoaderActor* Loader = GetWorld()->SpawnActor<AMeshLoaderActor>(Class, GetActorTransform(), SpawnParameters);
 		if (Loader)
 		{
 			Loader->AttachToActor(this, FAttachmentTransformRules::SnapToTargetIncludingScale);

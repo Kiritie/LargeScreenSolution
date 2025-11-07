@@ -4,6 +4,7 @@
 
 #include "ZMQControlTypes.h"
 #include "Scene/SceneManager.h"
+#include "Message/ZMQMessageManager.h"
 #include "Scene/Entity/EntityBase.h"
 
 UMessageHandle_DestroyEntity::UMessageHandle_DestroyEntity()
@@ -26,13 +27,23 @@ void UMessageHandle_DestroyEntity::OnReceiveMessage(const FString& InData)
 		{
 			ID = JsonObject->GetStringField(TEXT("id"));
 		}
+
+		if(!ASceneManager::Get()->HasSceneObject(ID))
+		{
+			UZMQMessageManager::SendStatusToServer(202,FString::Printf(TEXT("Spawn Entity is not Exist: id: %s"),*ID),TEXT("DestroyEntity"));
+			return;
+		}
 		
 		AEntityBase* Entity = ASceneManager::Get()->GetSceneObject<AEntityBase>(ID);
 		if(Entity)
 		{
 			Entity->Destroy();
-
+			UZMQMessageManager::SendStatusToServer(201,FString::Printf(TEXT("Spawn Entity is Destroy: id: %s"),*ID),TEXT("DestroyEntity"));
 			ASceneManager::Get()->RemoveSceneObject(ID);
+		}
+		else
+		{
+			UZMQMessageManager::SendStatusToServer(500,FString::Printf(TEXT("Spawn Entity Destroy Failed: id: %s"),*ID),TEXT("DestroyEntity"));
 		}
 	}
 }
